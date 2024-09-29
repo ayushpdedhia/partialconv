@@ -19,6 +19,7 @@
 #######################################################################################################################
 import argparse
 import os
+import re 
 import random
 import shutil
 import time
@@ -108,15 +109,26 @@ parser.add_argument('--ckptdirprefix', default='', type=str)
 best_prec1 = 0
 
 
+def sanitize_path(path):
+    # Remove invalid characters and replace spaces with underscores
+    return re.sub(r'[<>:"/\\|?*]', '', path).replace(' ', '_')
+
+
 def main():
     global args, best_prec1
     args = parser.parse_args()
 
+    # Sanitize the prefix and create a valid directory name
+    sanitized_prefix = sanitize_path(args.prefix)
+    sanitized_ckptdirprefix = sanitize_path(args.ckptdirprefix)
+
     # Fix the checkpoint directory creation
-    checkpoint_dir = os.path.join(args.ckptdirprefix, f'checkpoint_{args.arch}_{args.prefix}')
-    checkpoint_dir = checkpoint_dir.rstrip('/\\')  # Remove trailing slashes
+    checkpoint_dir = os.path.join(sanitized_ckptdirprefix, f'checkpoint_{args.arch}_{sanitized_prefix}')
+    checkpoint_dir = os.path.abspath(checkpoint_dir)  # Get the absolute path
+    
     if not os.path.exists(checkpoint_dir):
         os.makedirs(checkpoint_dir)
+    
     args.logger_fname = os.path.join(checkpoint_dir, 'loss.txt')
 
     with open(args.logger_fname, "a") as log_file:

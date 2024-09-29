@@ -112,7 +112,9 @@ def main():
     global args, best_prec1
     args = parser.parse_args()
 
-    checkpoint_dir = args.ckptdirprefix + 'checkpoint_' + args.arch + '_' + args.prefix + '/'
+    # Fix the checkpoint directory creation
+    checkpoint_dir = os.path.join(args.ckptdirprefix, f'checkpoint_{args.arch}_{args.prefix}')
+    checkpoint_dir = checkpoint_dir.rstrip('/\\')  # Remove trailing slashes
     if not os.path.exists(checkpoint_dir):
         os.makedirs(checkpoint_dir)
     args.logger_fname = os.path.join(checkpoint_dir, 'loss.txt')
